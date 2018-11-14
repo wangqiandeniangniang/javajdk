@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.sun.xml.internal.fastinfoset.util.ValueArray.MAXIMUM_CAPACITY;
 
@@ -220,4 +222,39 @@ public class MapLearn {
         n |= n >>> 16;
         return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
     }
+
+    /**
+     * 测试HashMap(Map<? extends K, ? extends V> m)
+     */
+    @Test
+    public void  mapConstructor() {
+        Map<String, String> map = new HashMap<>(8);
+        map.put("111", "22222");
+        map.put("222", "22222");
+        map.put("3333", "22222");
+        HashMap<String, String> h = new HashMap<>(map);
+        int size = h.size();
+        System.out.println(size);
+    }
+/*
+    final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
+        int s = m.size(); //获取map的大小
+        if (s > 0) {  //map有值进行处理
+            if (table == null) { //  红黑树表为空
+                float ft = ((float)s / loadFactor) + 1.0F;  //当前大小是否满足扩容需求，为了设置一个阈值，加一是为下次触发扩容的大小
+                int t = ((ft < (float)MAXIMUM_CAPACITY) ?//t最大不超过MAXINUM_CAPACITY
+                        (int)ft : MAXIMUM_CAPACITY);
+                if (t > threshold)  //如果大于当前阈值需要进行扩容
+                    threshold = tableSizeFor(t);
+            }
+            else if (s > threshold)  //红黑树table不为空，并且大小超过当前阈值，需要重新扩容和变换红黑树
+                resize();
+            for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) { //将m的原来的键值对放入当前map中（重新计算hash值）
+                K key = e.getKey();
+                V value = e.getValue();
+                putVal(hash(key), key, value, false, evict);
+            }
+        }
+    }
+    */
 }
