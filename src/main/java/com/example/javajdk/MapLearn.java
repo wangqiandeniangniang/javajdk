@@ -257,4 +257,16 @@ public class MapLearn {
         }
     }
     */
+
+    /**
+     *
+     //获取对应key的value， 也可能返回null，返回null 有两种情况一种是本身就是没有这个key，第二种，这个key对应的value就是null ， 如果是区分某个key 是否存在
+     //一般用contain(key)更好
+    public V get(Object key) {
+        HashMap.Node<K,V> e;  // map对应key-value 是node节点
+        return (e = getNode(hash(key), key)) == null ? null : e.value;  //获取对应的节点然后获取值
+    }
+     *
+     *
+     */
 }
