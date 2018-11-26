@@ -33,7 +33,10 @@
  * http://creativecommons.org/publicdomain/zero/1.0/
  */
 
-package java.util.concurrent;
+package com.example.javajdk.srcjdk.java.util.concurrent;
+
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
