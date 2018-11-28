@@ -33,7 +33,11 @@
  * http://creativecommons.org/publicdomain/zero/1.0/
  */
 
-package java.util;
+package com.example.javajdk.srcjdk.java.util;
+
+import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 
 /**
  * This class provides skeletal implementations of some {@link Queue}
@@ -41,9 +45,11 @@ package java.util;
  * the base implementation does <em>not</em> allow <tt>null</tt>
  * elements.  Methods {@link #add add}, {@link #remove remove}, and
  * {@link #element element} are based on {@link #offer offer}, {@link
- * #poll poll}, and {@link #peek peek}, respectively, but throw
+ * #poll poll}, and {@link #peek peek}, respectively【各自】, but throw
  * exceptions instead of indicating failure via <tt>false</tt> or
+ * add方法对应offer， remove对应poll， element对应peek
  * <tt>null</tt> returns.
+ * 这个是基础的实现Queue接口， 这个不允许出现null
  *
  * <p>A <tt>Queue</tt> implementation that extends this class must
  * minimally define a method {@link Queue#offer} which does not permit
@@ -52,6 +58,7 @@ package java.util;
  * {@link Collection#iterator}.  Typically, additional methods will be
  * overridden as well.  If these requirements cannot be met, consider
  * instead subclassing {@link AbstractCollection}.
+ * Queue的实现和扩展这个类必须定义offer方法不允许插入null元素， peek、poll、size方法，以及Iterator的方法
  *
  * <p>This class is a member of the
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
@@ -63,10 +70,11 @@ package java.util;
  */
 public abstract class AbstractQueue<E>
     extends AbstractCollection<E>
-    implements Queue<E> {
+    implements Queue<E> { //这个类继承AbstractCollection  表示Queue、list、Set都是AbstractCollection的子类
 
     /**
      * Constructor for use by subclasses.
+     * 提供一个空的构造方法
      */
     protected AbstractQueue() {
     }
@@ -79,6 +87,7 @@ public abstract class AbstractQueue<E>
      *
      * <p>This implementation returns <tt>true</tt> if <tt>offer</tt> succeeds,
      * else throws an <tt>IllegalStateException</tt>.
+     * 新增一个元素，如果空间还有成功返回true，否则抛出IllegalStateException
      *
      * @param e the element to add
      * @return <tt>true</tt> (as specified by {@link Collection#add})
@@ -103,6 +112,7 @@ public abstract class AbstractQueue<E>
      * from {@link #poll poll} only in that it throws an exception if this
      * queue is empty.
      *
+     * 取出和移除头元素， 如果有直接返回，否则抛出异常NoSuchElementException()
      * <p>This implementation returns the result of <tt>poll</tt>
      * unless the queue is empty.
      *
@@ -122,6 +132,7 @@ public abstract class AbstractQueue<E>
      * differs from {@link #peek peek} only in that it throws an exception if
      * this queue is empty.
      *
+     * 取出元素但是不移除元素， 如果有数据直接返回，否则抛出异常
      * <p>This implementation returns the result of <tt>peek</tt>
      * unless the queue is empty.
      *
@@ -140,6 +151,7 @@ public abstract class AbstractQueue<E>
      * Removes all of the elements from this queue.
      * The queue will be empty after this call returns.
      *
+     * 清除元素
      * <p>This implementation repeatedly invokes {@link #poll poll} until it
      * returns <tt>null</tt>.
      */
@@ -177,7 +189,7 @@ public abstract class AbstractQueue<E>
      *         this time due to insertion restrictions
      * @see #add(Object)
      */
-    public boolean addAll(Collection<? extends E> c) {
+    public boolean addAll(Collection<? extends E> c) { //将集合c的元素复制到本对象队列中
         if (c == null)
             throw new NullPointerException();
         if (c == this)
