@@ -23,12 +23,18 @@
  *
  */
 
-package java.util;
+package com.example.javajdk.srcjdk.java.util;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * This class provides a skeletal implementation of the <tt>Set</tt>
  * interface to minimize the effort required to implement this
  * interface. <p>
+ * 这个set抽象类型最简单的实现
  *
  * The process of implementing a set by extending this class is identical
  * to that of implementing a Collection by extending AbstractCollection,
@@ -36,11 +42,13 @@ package java.util;
  * class must obey the additional constraints imposed by the <tt>Set</tt>
  * interface (for instance, the add method must not permit addition of
  * multiple instances of an object to a set).<p>
+ *  他扩展了AbstractCollection
  *
  * Note that this class does not override any of the implementations from
  * the <tt>AbstractCollection</tt> class.  It merely adds implementations
  * for <tt>equals</tt> and <tt>hashCode</tt>.<p>
  *
+ * 这个类没有重写AbstractCollection类的任何的方法，只是实现了equals和hashCode方法
  * This class is a member of the
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
@@ -60,7 +68,7 @@ public abstract class AbstractSet<E> extends AbstractCollection<E> implements Se
      * Sole constructor.  (For invocation by subclass constructors, typically
      * implicit.)
      */
-    protected AbstractSet() {
+    protected AbstractSet() { //无参数的构造方法
     }
 
     // Comparison and hashing
@@ -73,6 +81,7 @@ public abstract class AbstractSet<E> extends AbstractCollection<E> implements Se
      * properly across different implementations of the <tt>Set</tt>
      * interface.<p>
      *
+     * 判断两个SET集合是否相等，长度、和set的子集，每个元素都相等
      * This implementation first checks if the specified object is this
      * set; if so it returns <tt>true</tt>.  Then, it checks if the
      * specified object is a set whose size is identical to the size of
@@ -83,16 +92,16 @@ public abstract class AbstractSet<E> extends AbstractCollection<E> implements Se
      * @return <tt>true</tt> if the specified object is equal to this set
      */
     public boolean equals(Object o) {
-        if (o == this)
+        if (o == this)   //判断是否本对象
             return true;
 
-        if (!(o instanceof Set))
+        if (!(o instanceof Set)) //是否set子集
             return false;
         Collection<?> c = (Collection<?>) o;
-        if (c.size() != size())
+        if (c.size() != size())  //判断大小
             return false;
         try {
-            return containsAll(c);
+            return containsAll(c); //所有元素是否相等
         } catch (ClassCastException unused)   {
             return false;
         } catch (NullPointerException unused) {
@@ -109,6 +118,7 @@ public abstract class AbstractSet<E> extends AbstractCollection<E> implements Se
      * and <tt>s2</tt>, as required by the general contract of
      * {@link Object#hashCode}.
      *
+     * 如果两个对象equals相等，那么hashCode应该相等， 如果set为null 那么hashcode为0
      * <p>This implementation iterates over the set, calling the
      * <tt>hashCode</tt> method on each element in the set, and adding up
      * the results.
@@ -123,7 +133,7 @@ public abstract class AbstractSet<E> extends AbstractCollection<E> implements Se
         while (i.hasNext()) {
             E obj = i.next();
             if (obj != null)
-                h += obj.hashCode();
+                h += obj.hashCode();//累加
         }
         return h;
     }
@@ -132,10 +142,11 @@ public abstract class AbstractSet<E> extends AbstractCollection<E> implements Se
      * Removes from this set all of its elements that are contained in the
      * specified collection (optional operation).  If the specified
      * collection is also a set, this operation effectively modifies this
-     * set so that its value is the <i>asymmetric set difference</i> of
+     * set so that its value is the <i>asymmetric 【不对称的】set difference</i> of
      * the two sets.
      *
-     * <p>This implementation determines which is the smaller of this set
+     *
+     * <p>This implementation determines【确定】 which is the smaller of this set
      * and the specified collection, by invoking the <tt>size</tt>
      * method on each.  If this set has fewer elements, then the
      * implementation iterates over this set, checking each element
@@ -150,7 +161,7 @@ public abstract class AbstractSet<E> extends AbstractCollection<E> implements Se
      * <p>Note that this implementation will throw an
      * <tt>UnsupportedOperationException</tt> if the iterator returned by the
      * <tt>iterator</tt> method does not implement the <tt>remove</tt> method.
-     *
+     * 必须实现remove方法， 否则抛出UnsupportedException
      * @param  c collection containing elements to be removed from this set
      * @return <tt>true</tt> if this set changed as a result of the call
      * @throws UnsupportedOperationException if the <tt>removeAll</tt> operation
