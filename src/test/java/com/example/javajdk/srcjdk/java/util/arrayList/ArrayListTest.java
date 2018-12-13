@@ -1,4 +1,4 @@
-package com.example.javajdk.srcjdk.java.util;
+package com.example.javajdk.srcjdk.java.util.arrayList;
 
 import java.io.*;
 import java.util.ArrayList;
