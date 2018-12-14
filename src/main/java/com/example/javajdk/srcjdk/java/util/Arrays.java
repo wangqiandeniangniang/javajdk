@@ -23,42 +23,34 @@
  *
  */
 
-package java.util;
+package com.example.javajdk.srcjdk.java.util;
 
 import java.lang.reflect.Array;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
-import java.util.function.DoubleBinaryOperator;
-import java.util.function.IntBinaryOperator;
-import java.util.function.IntFunction;
-import java.util.function.IntToDoubleFunction;
-import java.util.function.IntToLongFunction;
-import java.util.function.IntUnaryOperator;
-import java.util.function.LongBinaryOperator;
-import java.util.function.UnaryOperator;
-import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.function.*;
+import java.util.stream.*;
 
 /**
  * This class contains various methods for manipulating arrays (such as
  * sorting and searching). This class also contains a static factory
  * that allows arrays to be viewed as lists.
+ * 这个类包含多个操作数组的方法（例如排序和搜索），这个类也包含一个静态工厂，允许数组变成list
  *
  * <p>The methods in this class all throw a {@code NullPointerException},
  * if the specified array reference is null, except where noted.
+ * 如果没有标识，只要这个数组引用为空，将会抛出空指针异常
  *
  * <p>The documentation for the methods contained in this class includes
  * briefs description of the <i>implementations</i>. Such descriptions should
- * be regarded as <i>implementation notes</i>, rather than parts of the
+ * be regarded as【视为】 <i>implementation notes</i>, rather than parts of the
  * <i>specification</i>. Implementors should feel free to substitute other
  * algorithms, so long as the specification itself is adhered to. (For
  * example, the algorithm used by {@code sort(Object[])} does not have to be
  * a MergeSort, but it does have to be <i>stable</i>.)
- *
+ * 此类中包含的方法的文档，包含方法实现简单实现， 像这些描述应该视为实现说明，而不是这个规范一部分，
+ * 实现者应该随意替换其他的算法，只要遵循规范本身（举个例子，这个算法被用于排序（sort())并不一定是合并排序
+ * 但是他必须是稳定的
  * <p>This class is a member of the
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
@@ -75,26 +67,35 @@ public class Arrays {
      * algorithm will not further partition the sorting task. Using
      * smaller sizes typically results in memory contention across
      * tasks that makes parallel speedups unlikely.
+     *
+     * 低于这个最小数组长度，那么这个并行排序算法将不会继续划分这个排序任务，
+     * 使用较小的大小通常会导致跨任务的内存争用，这使得并行加速不太可能。
      */
-    private static final int MIN_ARRAY_SORT_GRAN = 1 << 13;
+    private static final int MIN_ARRAY_SORT_GRAN = 1 << 13;//26
 
-    // Suppresses default constructor, ensuring non-instantiability.
+    // Suppresses default constructor, ensuring non-instantiability. 禁止默认构造函数，确保非实例
     private Arrays() {}
 
     /**
-     * A comparator that implements the natural ordering of a group of
-     * mutually comparable elements. May be used when a supplied
+     * A comparator【比较】 that implements the natural ordering of a group of
+     * mutually【相互】 comparable elements. May be used when a supplied
      * comparator is null. To simplify code-sharing within underlying
      * implementations, the compare method only declares type Object
      * for its second argument.
+     * 这个比较类实现自然排序一组相互比较的元素， 这个可能用于没有comparator情况，为了
+     * 简化底层实现代码分享，这个比较方法只是为第二个参数声明了一个Object类型
      *
-     * Arrays class implementor's note: It is an empirical matter
+     * Arrays class implementor's note: It is an empirical【经验】 matter
      * whether ComparableTimSort offers any performance benefit over
      * TimSort used with this comparator.  If not, you are better off
-     * deleting or bypassing ComparableTimSort.  There is currently no
+     * deleting or bypassing【绕过】 ComparableTimSort.  There is currently no
      * empirical case for separating them for parallel sorting, so all
      * public Object parallelSort methods use the same comparator
      * based implementation.
+     *
+     * 数组类实现的说明： 这个是一个经验问题-在比较方面ComparableTimSort提供比TimSort更加好的执行性能
+     * 如果不是，你最好删除或绕过ComparableTimSort.目前没有经验案例将他们分开用于并行排序，所以所有公共
+     * 的Object并行排序都是相同基于比较器的实现
      */
     static final class NaturalOrder implements Comparator<Object> {
         @SuppressWarnings("unchecked")
@@ -107,16 +108,17 @@ public class Arrays {
     /**
      * Checks that {@code fromIndex} and {@code toIndex} are in
      * the range and throws an exception if they aren't.
+     * 检查开始索引到结束索引是否在这个区间内，如果没有就抛出异常
      */
-    private static void rangeCheck(int arrayLength, int fromIndex, int toIndex) {
-        if (fromIndex > toIndex) {
+    private static void rangeCheck(int arrayLength, int fromIndex, int toIndex) { //arrayLength： 数组长度， fromIndex开始索引，toIndex结束索引
+        if (fromIndex > toIndex) { // 结束索引小于开始索引
             throw new IllegalArgumentException(
-                    "fromIndex(" + fromIndex + ") > toIndex(" + toIndex + ")");
+                    "fromIndex(" + fromIndex + ") > toIndex(" + toIndex + ")"); //抛出参数异常
         }
-        if (fromIndex < 0) {
+        if (fromIndex < 0) { //开始索引小于0  抛出数组索引越界
             throw new ArrayIndexOutOfBoundsException(fromIndex);
         }
-        if (toIndex > arrayLength) {
+        if (toIndex > arrayLength) { //如果结束索引大于数组的大小抛出数组越界异常
             throw new ArrayIndexOutOfBoundsException(toIndex);
         }
     }
@@ -127,10 +129,15 @@ public class Arrays {
      * expanding arguments into those required for the internal
      * implementation methods residing in other package-private
      * classes (except for legacyMergeSort, included in this class).
+     *
+     * 排序方法。注意所有排序方法都会采用这种相同的形式：执行必要的参数检查、然后将参数扩展到只有包私有的内部实现类中，（只有
+     * legacyMergeSort除外）
+     *
      */
 
     /**
      * Sorts the specified array into ascending numerical order.
+     * 将指定的数组按升序排序
      *
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
@@ -138,7 +145,10 @@ public class Arrays {
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
      *
-     * @param a the array to be sorted
+     * 实现注意： 这个排序算法采用是Dual-Pivot 快速排序， 这个算法提供 O(n log(n))执行时间，引起其他
+     * 快速排序降到二次方下，它一般快鱼传统的（one-pivote）的快速排序实现
+     *
+     * @param a the array to be sorted // a就是排序数组
      */
     public static void sort(int[] a) {
         DualPivotQuicksort.sort(a, 0, a.length - 1, null, 0, 0);
@@ -149,36 +159,41 @@ public class Arrays {
      * to be sorted extends from the index {@code fromIndex}, inclusive, to
      * the index {@code toIndex}, exclusive. If {@code fromIndex == toIndex},
      * the range to be sorted is empty.
+     * 按升序排序特定范围数组的元素， 这个范围从fromeIndex开始【包括该位置元素】到toIndex(不包括该元素)
+     * 如果fromIndex==toIndex，这个范围的元素为空
      *
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
+     * 实现注意： 这个排序算法采用是Dual-Pivot的快速排序， 这个算法提供了O(n log(n)) 执行时间，导致其他快速排序降低
+     * 二次执行性能，他一般快于传统的（one-pivot)快速排序实现
+     * @param a the array to be sorted   排序的数组
+     * @param fromIndex the index of the first element, inclusive, to be sorted 开始排序的索引位置 （包括当前元素本身）
+     * @param toIndex the index of the last element, exclusive, to be sorted 结束排序的索引位置（不包括当前元素的本身）
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
-     *
-     * @throws IllegalArgumentException if {@code fromIndex > toIndex}
+     * @throws IllegalArgumentException if {@code fromIndex > toIndex} //抛出异常 开始索引大于结束索引
      * @throws ArrayIndexOutOfBoundsException
-     *     if {@code fromIndex < 0} or {@code toIndex > a.length}
+     *     if {@code fromIndex < 0} or {@code toIndex > a.length} //结束的索引大于数组的元素的大小，数组的索引越界
      */
     public static void sort(int[] a, int fromIndex, int toIndex) {
-        rangeCheck(a.length, fromIndex, toIndex);
+        rangeCheck(a.length, fromIndex, toIndex); //检查排序索引是否越界
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
 
     /**
      * Sorts the specified array into ascending numerical order.
-     *
+     * 将指定元素安装升序排序
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
+     *  实现注意： 这个排序算法使用的是Dual-Pivot快速排序，这个算法提供了O(nlog(n))执行的排序时间， 这也使得
+     *  快速排序减低的二次执行的时间、他一般快于传统排序（one-pivot)快速排序实现
      *
-     * @param a the array to be sorted
+     * @param a the array to be sorted   a排序数组
      */
     public static void sort(long[] a) {
         DualPivotQuicksort.sort(a, 0, a.length - 1, null, 0, 0);
@@ -189,35 +204,38 @@ public class Arrays {
      * to be sorted extends from the index {@code fromIndex}, inclusive, to
      * the index {@code toIndex}, exclusive. If {@code fromIndex == toIndex},
      * the range to be sorted is empty.
-     *
+     * 将指定范围的数组的元素进行排序，这个范围从fromIndex（含本索引位置的对象） 到toIndex(不含本索引位置对象)（long[])
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
+     * 实现注意： 这个排序算法实现的是Dual-Pivot的快速排序。 它提供O（nlog(n)）执行排序时间，
+     * 它导致其他排序降到次方排序时间，它一般快于传统排序（on-pivot)快速排序实现
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
+     * @param a the array to be sorted  a是排序数组
+     * @param fromIndex the index of the first ele ment, inclusive, to be sorted 排序的开始位置（包含）
+     * @param toIndex the index of the last element, exclusive, to be sorted排序结束的位置（不包含）
      *
-     * @throws IllegalArgumentException if {@code fromIndex > toIndex}
+     * @throws IllegalArgumentException if {@code fromIndex > toIndex}  如果开始索引位置》 结束索引位置 抛出参数异常
      * @throws ArrayIndexOutOfBoundsException
-     *     if {@code fromIndex < 0} or {@code toIndex > a.length}
+     *     if {@code fromIndex < 0} or {@code toIndex > a.length} 如果 结束索引大于数组的元素的大小抛出数组的索引的越界
      */
     public static void sort(long[] a, int fromIndex, int toIndex) {
-        rangeCheck(a.length, fromIndex, toIndex);
+        rangeCheck(a.length, fromIndex, toIndex); // 检查数组是否越界
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
 
     /**
      * Sorts the specified array into ascending numerical order.
-     *
+     * 将特定的数组按照升序排序【short数组】
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
-     *
+     *  实现注意： 这个排序的算法采用的Dual-Pivot的快速的排序， 这个算法提供了O(n log (n)) 执行时间，他
+     *  导致其他快速排序降低了次方的执行时间， 他一般快于传统（one-pivot)快速排序实现
      * @param a the array to be sorted
      */
     public static void sort(short[] a) {
@@ -229,35 +247,39 @@ public class Arrays {
      * to be sorted extends from the index {@code fromIndex}, inclusive, to
      * the index {@code toIndex}, exclusive. If {@code fromIndex == toIndex},
      * the range to be sorted is empty.
-     *
+     * 将特定范围的元素排序， 这个范围从fromIndex(包含) 到 toIndex(不包含)，如果fromIndex== toIndex
+     * 这个范围的元素为空
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
+     * 实现注意： 这个排序的算法采用是Dual-Pivot快四排序， 这个算法提供了O(n log(n))执行时间
+     * 他导致快速排序降低了二次方执行的时间， 他一般快于传统的（one-pivot)快速排序实现
+     * @param a the array to be sorted 排序数组
+     * @param fromIndex the index of the first element, inclusive, to be sorted 排序的开始位置
+     * @param toIndex the index of the last element, exclusive, to be sorted 排序的结束位置
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
-     *
-     * @throws IllegalArgumentException if {@code fromIndex > toIndex}
+     * @throws IllegalArgumentException if {@code fromIndex > toIndex} 如果开始索引大于结束索引抛出参数异常
      * @throws ArrayIndexOutOfBoundsException
-     *     if {@code fromIndex < 0} or {@code toIndex > a.length}
+     *     if {@code fromIndex < 0} or {@code toIndex > a.length} 如果开始索引小于0 或 结束索引大于元素大小抛出数组的索引越界
      */
     public static void sort(short[] a, int fromIndex, int toIndex) {
-        rangeCheck(a.length, fromIndex, toIndex);
+        rangeCheck(a.length, fromIndex, toIndex); //检查数组索引的是否越界
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
 
     /**
      * Sorts the specified array into ascending numerical order.
-     *
+     * 将字符数组按照升序排序
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
      *
+     * 实现注意： 这个排序算法实现Dual-Pivot快速的排序， 这个算法提供了O(nlog(n))的执行的时间
+     * 他导致其他快速排序降低到二次方执行时间， 他一般快于传统（one-pivot）快速排序实现
      * @param a the array to be sorted
      */
     public static void sort(char[] a) {
@@ -269,35 +291,40 @@ public class Arrays {
      * to be sorted extends from the index {@code fromIndex}, inclusive, to
      * the index {@code toIndex}, exclusive. If {@code fromIndex == toIndex},
      * the range to be sorted is empty.
+     *  将特定范围的字符数组的按照升序排序，这个范围从fromindex 到 toIndex， 如果 fromIndex== toIndex方法
      *
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
+     * 实现注意： 这个排序的算法是一个Dual-Pivot快速排序， 他提供了O(n log(n))执行时间， 他导致
+     * 其他快速排序的算法降低到二次方法执行的时间， 他一般要快于传统的（one-pivot）快速排序实现
+     * @param a the array to be sorted  排序的数组
+     * @param fromIndex the index of the first element, inclusive, to be sorted 排序的开始位置
+     * @param toIndex the index of the last element, exclusive, to be sorted 排序的结束位置
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
-     *
-     * @throws IllegalArgumentException if {@code fromIndex > toIndex}
+     * @throws IllegalArgumentException if {@code fromIndex > toIndex} 如果开始索引大于结束的抛出异常
      * @throws ArrayIndexOutOfBoundsException
-     *     if {@code fromIndex < 0} or {@code toIndex > a.length}
+     *     if {@code fromIndex < 0} or {@code toIndex > a.length}//如果 开始索引小于0 ，或结束索引大于数组的大小 抛出数组越界异常
      */
     public static void sort(char[] a, int fromIndex, int toIndex) {
-        rangeCheck(a.length, fromIndex, toIndex);
+        rangeCheck(a.length, fromIndex, toIndex); //检查传入的索引是否越界
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
 
     /**
      * Sorts the specified array into ascending numerical order.
      *
+     * 将byte[]数组按照升序排序
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
      *
+     * 实现注意： 这个排序算法采用的是Dual-Pivot快速排序的算法，这个算法提供了O(nlog(n))执行时间
+     * 他导致其他快速排序降低到二次性能， 他一般快于传统（one-pivot）快速排序实现
      * @param a the array to be sorted
      */
     public static void sort(byte[] a) {
@@ -309,42 +336,50 @@ public class Arrays {
      * to be sorted extends from the index {@code fromIndex}, inclusive, to
      * the index {@code toIndex}, exclusive. If {@code fromIndex == toIndex},
      * the range to be sorted is empty.
-     *
+     * 将特定范围byte[]数组按照升序排序， 他的范围从fromindex 到 toIndex. 如果 fromIndex==toIndex
+     * 这个范围元素为空
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
+     * 实现注意： 这个排序算法采用的dual-Pivot快速排序，这个算方法提供O(n log(n))执行时间和
+     * 他导致快速排序降低了二次方性能， 这个一般快于传统（one-pivot）快速排序的算法
+     * @param a the array to be sorted 数组
+     * @param fromIndex the index of the first element, inclusive, to be sorted 开始索引
+     * @param toIndex the index of the last element, exclusive, to be sorted 结束索引
      *
-     * @throws IllegalArgumentException if {@code fromIndex > toIndex}
+     * @throws IllegalArgumentException if {@code fromIndex > toIndex} // 开始索引大于结束索引
      * @throws ArrayIndexOutOfBoundsException
-     *     if {@code fromIndex < 0} or {@code toIndex > a.length}
+     *     if {@code fromIndex < 0} or {@code toIndex > a.length} 如果开始索引小于0 ， 或者结束索引大于数组大小
      */
     public static void sort(byte[] a, int fromIndex, int toIndex) {
-        rangeCheck(a.length, fromIndex, toIndex);
+        rangeCheck(a.length, fromIndex, toIndex); //检查索引是否越界
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1);
     }
 
     /**
      * Sorts the specified array into ascending numerical order.
-     *
-     * <p>The {@code <} relation does not provide a total order on all float
+     * 排序float【】数组按照升序降序
+     * <p>The {@code <} relation【关系】 does not provide a total order on all float
      * values: {@code -0.0f == 0.0f} is {@code true} and a {@code Float.NaN}
      * value compares neither less than, greater than, nor equal to any value,
      * even itself. This method uses the total order imposed by the method
      * {@link Float#compareTo}: {@code -0.0f} is treated as less than value
      * {@code 0.0f} and {@code Float.NaN} is considered greater than any
      * other value and all {@code Float.NaN} values are considered equal.
+     * 在所有float值这关系不提供一个所有排序，例如 -0.0f==0.0f为true， 一个Float.NaN既不会大于或小于，也等于
+     * 任何值，甚至他自己。 这个方法使用总的排序实施到这个compareTo方法，-0.0f 作为作为小于0.0f的值，然后Float.NaN被作为
+     * 大于任何值，所有Float.NaN的值被视为相同。
      *
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
+     * 实现注意: 这个排序算法是实现了Dual-Pivot 快速排序， 这个算法提供O(n log(n))执行时间
+     * ，他一般快于传统（one-pivot)快速排序算法实现
      *
      * @param a the array to be sorted
      */
@@ -357,7 +392,8 @@ public class Arrays {
      * to be sorted extends from the index {@code fromIndex}, inclusive, to
      * the index {@code toIndex}, exclusive. If {@code fromIndex == toIndex},
      * the range to be sorted is empty.
-     *
+     * 特定范围的数组按照升序排序， 这个范围的从fromIndex 到 toIndex ，如果 fromIndex ==  toIndex
+     * 表示这个范围的数组为空
      * <p>The {@code <} relation does not provide a total order on all float
      * values: {@code -0.0f == 0.0f} is {@code true} and a {@code Float.NaN}
      * value compares neither less than, greater than, nor equal to any value,
@@ -365,18 +401,22 @@ public class Arrays {
      * {@link Float#compareTo}: {@code -0.0f} is treated as less than value
      * {@code 0.0f} and {@code Float.NaN} is considered greater than any
      * other value and all {@code Float.NaN} values are considered equal.
-     *
+     * 这个关系并不会提供全部排序对于所有float的值： -0.0f== o.0f 是为true， Float.NaN的值
+     * 不小于、大于、或等于任何值，甚至是他自己。 这个方法使用全部排序强加到这个compareTo方法上，
+     * -0.0f被作为小于 0.0f, 而Float.NaN的值大于其他任何值，所有Float.NaN都相等。
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
+     * 实现注意： 这个排序算法是一个Dual-Pivot快速排序， 这个算法提供O(n log(n))执行时间， 导致
+     * 其他快速排序降低到二次执行时间，这个一般比传统（one-pivot)快速排序实现快
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
+     * @param a the array to be sorted  数组
+     * @param fromIndex the index of the first element, inclusive, to be sorted 排序开始位置
+     * @param toIndex the index of the last element, exclusive, to be sorted 排序结束位置
      *
-     * @throws IllegalArgumentException if {@code fromIndex > toIndex}
+     * @throws IllegalArgumentException if {@code fromIndex > toIndex} 如果 fromIndex 大于toIndex,
      * @throws ArrayIndexOutOfBoundsException
      *     if {@code fromIndex < 0} or {@code toIndex > a.length}
      */
@@ -387,7 +427,7 @@ public class Arrays {
 
     /**
      * Sorts the specified array into ascending numerical order.
-     *
+     * 将double[]数组按照升序排序
      * <p>The {@code <} relation does not provide a total order on all double
      * values: {@code -0.0d == 0.0d} is {@code true} and a {@code Double.NaN}
      * value compares neither less than, greater than, nor equal to any value,
@@ -395,6 +435,9 @@ public class Arrays {
      * {@link Double#compareTo}: {@code -0.0d} is treated as less than value
      * {@code 0.0d} and {@code Double.NaN} is considered greater than any
      * other value and all {@code Double.NaN} values are considered equal.
+     * 这个关系不会为所有double值提供整个排序： -0.0d == 0.0d 是true， Double.NaN 它小于
+     * 、大于、等于任何值，甚至是他本身，这个方法使用全排序强加到这个compareTo方法上，
+     * -0.0d被作为小于0.0d， Double.NaN作为大于任何其他值，所有Double.NaN都是相等。
      *
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
@@ -402,6 +445,9 @@ public class Arrays {
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
      *
+     * 实现注意： 这个排序算法使用Dual-Pivot快速排序
+     * 这个算法提供了O(n log(n))执行时间， 他导致其他快速排序减低二次方执行时间， 这个一般
+     * 快于传统的（one-pivot)快速排序实现
      * @param a the array to be sorted
      */
     public static void sort(double[] a) {
@@ -413,7 +459,7 @@ public class Arrays {
      * to be sorted extends from the index {@code fromIndex}, inclusive, to
      * the index {@code toIndex}, exclusive. If {@code fromIndex == toIndex},
      * the range to be sorted is empty.
-     *
+     * 为特定范围的数组进行升序排序， 这个范围从fromIndex == toIndex， 这个范围数组为空
      * <p>The {@code <} relation does not provide a total order on all double
      * values: {@code -0.0d == 0.0d} is {@code true} and a {@code Double.NaN}
      * value compares neither less than, greater than, nor equal to any value,
@@ -421,29 +467,35 @@ public class Arrays {
      * {@link Double#compareTo}: {@code -0.0d} is treated as less than value
      * {@code 0.0d} and {@code Double.NaN} is considered greater than any
      * other value and all {@code Double.NaN} values are considered equal.
+     * 这个关系不会对于所有double进行全量排序: -0.0d == 0.0d 的值是true， Double.NaN既不是
+     * 小于、大于、等于任何值，甚至他自己， 这个方法使用全量排序应用到compareTo方法上：
+     * -0.0d被作为小于0.0d， Double.NaN大于任何其他值，所有Double.NaN都是相等的
      *
      * <p>Implementation note: The sorting algorithm is a Dual-Pivot Quicksort
      * by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm
      * offers O(n log(n)) performance on many data sets that cause other
      * quicksorts to degrade to quadratic performance, and is typically
      * faster than traditional (one-pivot) Quicksort implementations.
+     * 实现注意: 排序算法是实现了Dual-Pivot快速排序， 这个算法提供O(n log(n))执行时间，
+     * 导致其他快速排序减少二次执行时间，这个一般比传统快速排序实现。
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
+     * @param a the array to be sorted  a数组
+     * @param fromIndex the index of the first element, inclusive, to be sorted 从什么索引
+     * @param toIndex the index of the last element, exclusive, to be sorted 结束索引
      *
      * @throws IllegalArgumentException if {@code fromIndex > toIndex}
      * @throws ArrayIndexOutOfBoundsException
      *     if {@code fromIndex < 0} or {@code toIndex > a.length}
      */
     public static void sort(double[] a, int fromIndex, int toIndex) {
-        rangeCheck(a.length, fromIndex, toIndex);
+        rangeCheck(a.length, fromIndex, toIndex); //判断索引是否越界
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
 
     /**
      * Sorts the specified array into ascending numerical order.
      *
+     * byte[]数组按照升序排序
      * @implNote The sorting algorithm is a parallel sort-merge that breaks the
      * array into sub-arrays that are themselves sorted and then merged. When
      * the sub-array length reaches a minimum granularity, the sub-array is
@@ -454,6 +506,10 @@ public class Arrays {
      * working space no greater than the size of the original array. The
      * {@link ForkJoinPool#commonPool() ForkJoin common pool} is used to
      * execute any parallel tasks.
+     * 这个排序算法是平行排序合并算法，他是将数组分成子数组，然后将子数组进行排序，然后合并结果。
+     * 当这个子数组长度已经到达最小粒度。那么这个子数组就会使用合适的sort方法进行排序， 如果这个长度
+     * 小于最小粒度。 那么这个使用合适sort排序。这个算法要求一个工作空间不等大于这个元素数组大小，这个ForkJoinPool
+     * commonPool 被用于执行任何平行任务
      *
      * @param a the array to be sorted
      *
