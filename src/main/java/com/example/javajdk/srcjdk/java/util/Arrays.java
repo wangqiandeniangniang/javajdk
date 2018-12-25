@@ -518,7 +518,7 @@ public class Arrays {
     public static void parallelSort(byte[] a) {
         int n = a.length, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
-            (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
+            (p = ForkJoinPool.getCommonPoolParallelism()) == 1) // 如果当前数组长度小于26或线程池的并行线程只有一条
             DualPivotQuicksort.sort(a, 0, n - 1);
         else
             new ArraysParallelSortHelpers.FJByte.Sorter
@@ -532,6 +532,8 @@ public class Arrays {
      * The range to be sorted extends from the index {@code fromIndex},
      * inclusive, to the index {@code toIndex}, exclusive. If
      * {@code fromIndex == toIndex}, the range to be sorted is empty.
+     * 将数组的元素按照升序进行排序， 这个排序的范围从 fromIndex（包含）到 toIndex(不包含)
+     * 如果fromIndex == toIndex 那么排序为空
      *
      * @implNote The sorting algorithm is a parallel sort-merge that breaks the
      * array into sub-arrays that are themselves sorted and then merged. When
@@ -543,24 +545,28 @@ public class Arrays {
      * space no greater than the size of the specified range of the original
      * array. The {@link ForkJoinPool#commonPool() ForkJoin common pool} is
      * used to execute any parallel tasks.
+     * 这个排序的算法测试并行排序合并算法，他是将这个数组拆分成小的长度数组，直到最小粒度， 这个子数组
+     * 的排序使用Arrays.sort方法，如果特定的数组小于最小粒度，那么这个排序将会使用Arrays.sort()方法，这个算法
+     * 要求工作空间不大于这个特定长度原始的数组的空间，，这个ForkJoinPool.commonPool()的ForkJoin 公共的线程池，他可以
+     * 被执行任何并行任务。
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
+     * @param a the array to be sorted a 将会排序的数组
+     * @param fromIndex the index of the first element, inclusive, to be sorted 开始索引（包含）
+     * @param toIndex the index of the last element, exclusive, to be sorted 结束索引（不包含）
      *
-     * @throws IllegalArgumentException if {@code fromIndex > toIndex}
+     * @throws IllegalArgumentException if {@code fromIndex > toIndex}  如果开始索引》 结束索引 抛出IllegalArgumentException方法
      * @throws ArrayIndexOutOfBoundsException
-     *     if {@code fromIndex < 0} or {@code toIndex > a.length}
+     *     if {@code fromIndex < 0} or {@code toIndex > a.length}  // 如果开始索引小于0， 结束索引大于数组长度 抛出 ArrayIndexOutOfBoundsException
      *
      * @since 1.8
      */
     public static void parallelSort(byte[] a, int fromIndex, int toIndex) {
-        rangeCheck(a.length, fromIndex, toIndex);
-        int n = toIndex - fromIndex, p, g;
+        rangeCheck(a.length, fromIndex, toIndex); //检查数组是否越界
+        int n = toIndex - fromIndex, p, g; // n表示排序的元素个数
         if (n <= MIN_ARRAY_SORT_GRAN ||
-            (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
+            (p = ForkJoinPool.getCommonPoolParallelism()) == 1) //如果排序的个数小于26 或者 公共池的线程只有一个将会直接排序操作，
             DualPivotQuicksort.sort(a, fromIndex, toIndex - 1);
-        else
+        else //否则需要将线程进行拆分
             new ArraysParallelSortHelpers.FJByte.Sorter
                 (null, a, new byte[n], fromIndex, n, 0,
                  ((g = n / (p << 2)) <= MIN_ARRAY_SORT_GRAN) ?
@@ -569,7 +575,7 @@ public class Arrays {
 
     /**
      * Sorts the specified array into ascending numerical order.
-     *
+     * 将char[]按照升序进行排序
      * @implNote The sorting algorithm is a parallel sort-merge that breaks the
      * array into sub-arrays that are themselves sorted and then merged. When
      * the sub-array length reaches a minimum granularity, the sub-array is
@@ -580,15 +586,18 @@ public class Arrays {
      * working space no greater than the size of the original array. The
      * {@link ForkJoinPool#commonPool() ForkJoin common pool} is used to
      * execute any parallel tasks.
+     * 这个排序算法是并行排序合并算法，它会将数组拆分最小粒度的子数组，当子数组长度到达最小粒度，这个子数组
+     * 将会使用合适的Arrays.sort方法，如果长度特定数组小于最小粒度， 那么这个排序将会使用合适的Arrays.sort()方法，
+     * 这个算法工作空间将不会大于原始数组的大小，这个ForkJoinPool commonPool()的ForkJoin 公共池）被用来执行任何并行任务。
      *
-     * @param a the array to be sorted
+     * @param a the array to be sorted a 将会被排序的数组
      *
      * @since 1.8
      */
     public static void parallelSort(char[] a) {
         int n = a.length, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
-            (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
+            (p = ForkJoinPool.getCommonPoolParallelism()) == 1) //如果这个数组的长度小于最小粒度，也就是这个数组小于26 ,或者这ForkJoinPool的线程池的线程数量为1，就直接执行排序算法
             DualPivotQuicksort.sort(a, 0, n - 1, null, 0, 0);
         else
             new ArraysParallelSortHelpers.FJChar.Sorter
@@ -602,6 +611,8 @@ public class Arrays {
      * The range to be sorted extends from the index {@code fromIndex},
      * inclusive, to the index {@code toIndex}, exclusive. If
      * {@code fromIndex == toIndex}, the range to be sorted is empty.
+     * 将特定范围的数组按照升序进行排序， 这个范围是从 fromIndex(包括) 到toIndex（不包括）
+     * 如果fromIndex == toIndex, 这个排序元素为空
      *
       @implNote The sorting algorithm is a parallel sort-merge that breaks the
      * array into sub-arrays that are themselves sorted and then merged. When
@@ -613,14 +624,17 @@ public class Arrays {
      * space no greater than the size of the specified range of the original
      * array. The {@link ForkJoinPool#commonPool() ForkJoin common pool} is
      * used to execute any parallel tasks.
+     * 这个排序采用是并行排序合并算法，他将数组拆分到最小粒度的数组，这个子数组将会使用合适的Arrays.sort（）方法
+       * ，如果这个特定的长度小于最小粒度，这个子数组将会使用合适的Arrays.sort()方法，这个算法需要工作空间不会大于
+       * 特殊原数组的大小，这个ForkJoinPool的commonPool() 的ForkJoin 公共线程池 将会并行任务
+       *
+     * @param a the array to be sorted 排序的数组
+     * @param fromIndex the index of the first element, inclusive, to be sorted   开始索引（包括）
+     * @param toIndex the index of the last element, exclusive, to be sorted  结束索引（不包括）
      *
-     * @param a the array to be sorted
-     * @param fromIndex the index of the first element, inclusive, to be sorted
-     * @param toIndex the index of the last element, exclusive, to be sorted
-     *
-     * @throws IllegalArgumentException if {@code fromIndex > toIndex}
+     * @throws IllegalArgumentException if {@code fromIndex > toIndex}   如果开始索引》结束索引 抛出IllegalArgumentException
      * @throws ArrayIndexOutOfBoundsException
-     *     if {@code fromIndex < 0} or {@code toIndex > a.length}
+     *     if {@code fromIndex < 0} or {@code toIndex > a.length}  如果开始索引小于0，结束索引大于数组长度， 抛出ArrayIndexOutOfBoundsException
      *
      * @since 1.8
      */
@@ -628,7 +642,7 @@ public class Arrays {
         rangeCheck(a.length, fromIndex, toIndex);
         int n = toIndex - fromIndex, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
-            (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
+            (p = ForkJoinPool.getCommonPoolParallelism()) == 1) //如果数组的长度<=26, 或者ForkJoinPool的公共线程池的线程只有一个，将会直接执行排序操作
             DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
         else
             new ArraysParallelSortHelpers.FJChar.Sorter
@@ -639,6 +653,7 @@ public class Arrays {
 
     /**
      * Sorts the specified array into ascending numerical order.
+     * 将数组按照升序排序
      *
      * @implNote The sorting algorithm is a parallel sort-merge that breaks the
      * array into sub-arrays that are themselves sorted and then merged. When
@@ -650,6 +665,8 @@ public class Arrays {
      * working space no greater than the size of the original array. The
      * {@link ForkJoinPool#commonPool() ForkJoin common pool} is used to
      * execute any parallel tasks.
+     *
+     * 这个排序使用并行排序合并算法，他将数组拆分成最小粒度的最小的数组排序然后合并结果， 当数组达到最小粒度的时候
      *
      * @param a the array to be sorted
      *
